@@ -1,0 +1,32 @@
+{
+  "name": "svelte-vscode-extension-boilerplate-webview",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "nvms",
+  "type": "module",
+  "main": "dist/extension.js",
+  "scripts": {
+    "build": "vite build",
+    "dev": "concurrently \"vite\" \"vite build --watch\""
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^4.0.1",
+    "@tsconfig/svelte": "^5.0.4",
+    "@types/node": "^20.10.0",
+    "autoprefixer": "^10.4.16",
+    "concurrently": "^8.2.2",
+    "postcss": "^8.4.31",
+    "postcss-nested": "^6.0.1",
+    "prettier": "^3.1.0",
+    "prettier-plugin-svelte": "^3.3.2",
+    "sass": "^1.69.5",
+    "svelte-preprocess": "^6.0.3",
+    "tailwindcss": "^3.3.5",
+    "typescript": "^5.3.2",
+    "vite": "^5.0.2"
+  },
+  "dependencies": {
+    "svelte": "^5.2.7"
+  }
+}

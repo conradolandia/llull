@@ -1,0 +1,10 @@
+/* https://code.visualstudio.com/api/references/theme-color */
+
+* {
+  --vscode-foreground: #E9ECEF;
+  --vscode-panel-background: #05080C;
+}
+
+html {
+  font-size: 14px;
+}

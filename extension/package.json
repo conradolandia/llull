@@ -1,0 +1,68 @@
+{
+  "name": "svelte-vscode-extension-boilerplate",
+  "displayName": "Svelte VSCode Extension Boilerplate",
+  "version": "1.0.0",
+  "description": "",
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "general"
+  ],
+  "homepage": "https://github.com/nvms/svelte-vscode-extension-boilerplate/blob/master/README.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nvms/svelte-vscode-extension-boilerplate"
+  },
+  "license": "ISC",
+  "author": {
+    "name": "nvms"
+  },
+  "publisher": "nvms",
+  "type": "commonjs",
+  "main": "dist/extension.umd.js",
+  "browser": "dist/extension.browser.js",
+  "scripts": {
+    "build": "tsx scripts/esbuild.ts && tsx scripts/esbuild.ts --browser",
+    "build:watch": "tsx scripts/esbuild.ts --watch",
+    "package": "vsce package --no-dependencies",
+    "publish": "vsce publish --no-dependencies",
+    "release": "bumpp -c \"Release v%s\" package.json"
+  },
+  "contributes": {
+    "commands": [],
+    "configuration": {},
+    "views": {
+      "sveltecode": [
+        {
+          "type": "webview",
+          "id": "sveltecode.mainView",
+          "name": "sveltecode main view"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "panel": [
+        {
+          "id": "sveltecode",
+          "title": "sveltecode",
+          "icon": "assets/ph_airplane-tilt.svg"
+        }
+      ]
+    }
+  },
+  "activationEvents": [],
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/vscode": "^1.84.2",
+    "@vscode/vsce": "^2.22.0",
+    "bumpp": "^9.2.0",
+    "esbuild": "^0.19.8",
+    "tsx": "^4.6.2",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "vscode": "^1.84.2"
+  },
+  "icon": "assets/logo.png"
+}
