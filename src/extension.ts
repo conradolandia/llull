@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import ollama from 'ollama';
-import { getWebViewContent, processCommand } from './lib';
+import { getWebViewContent, processCommand } from './lib/index';
 
 const model: string = 'deepseek-coder-v2:16b';
 
@@ -13,7 +13,7 @@ export function activate(context: vscode.ExtensionContext) {
       { enableScripts: true }
     );
 
-    panel.webview.html = getWebViewContent();
+    panel.webview.html = getWebViewContent(panel.webview, context.extensionUri);
 
     panel.webview.onDidReceiveMessage(async (message: { command: string; prompt: string }) => {
       console.log('[llull] received message:', message);

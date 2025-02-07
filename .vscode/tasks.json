@@ -6,15 +6,44 @@
 		{
 			"type": "npm",
 			"script": "watch",
-			"problemMatcher": "$tsc-watch",
+			"problemMatcher": [
+				"$tsc-watch",
+				{
+					"pattern": [
+						{
+							"regexp": ".",
+							"file": 1,
+							"location": 2,
+							"message": 3
+						}
+					],
+					"background": {
+						"activeOnStart": true,
+						"beginsPattern": "watching for file changes",
+						"endsPattern": "built in .*ms"
+					}
+				}
+			],
 			"isBackground": true,
 			"presentation": {
-				"reveal": "never"
+				"reveal": "always",
+				"panel": "new"
 			},
 			"group": {
 				"kind": "build",
 				"isDefault": true
+			},
+			"options": {
+				"env": {
+					"FORCE_COLOR": "1"
+				}
 			}
+		},
+		{
+			"label": "Reload Window",
+			"command": "${command:workbench.action.reloadWindow}",
+			"type": "shell",
+			"problemMatcher": []
 		}
 	]
 }
