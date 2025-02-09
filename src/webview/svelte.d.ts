@@ -1,5 +1,12 @@
 /// <reference types="svelte" />
 /// <reference types="vite/client" />
+/// <reference types="@sveltejs/vite-plugin-svelte" />
+
+export declare interface VSCodeAPI {
+  postMessage(message: any): void;
+  getState(): any;
+  setState(state: any): void;
+}
 
 declare global {
   interface Window {

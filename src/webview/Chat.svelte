@@ -1,26 +1,24 @@
 <script lang="ts">
-  import type { VSCodeAPI } from './types';
+  import type { VSCodeAPI } from './svelte.d';
   import { chatStore } from './stores/chat';
-  import './styles/chat.css';
   import { onMount } from 'svelte';
+
+  import './styles/chat.css';
+
+  import InputToolBar from './components/InputToolBar.svelte';
 
   let textArea: HTMLTextAreaElement;
   let responseArea: HTMLDivElement;
 
   const vscode = (window as any).acquireVsCodeApi() as VSCodeAPI;
 
-  function handleSubmit() {
+  function handleSubmit(): void {
     if ($chatStore.prompt) {
       const prompt = $chatStore.prompt;
-
-      // First update the store
       chatStore.startChat(prompt);
-
-      // Then get the updated messages that include the new prompt
       const messages = [...$chatStore.messages];
       console.log('Current conversation state:', messages);
 
-      // Send the message with updated conversation history
       vscode.postMessage({
         command: 'chat',
         text: prompt,
@@ -31,35 +29,37 @@
     }
   }
 
-  function adjustTextareaHeight() {
+  function adjustTextareaHeight(): void {
     if (textArea) {
-      // Reset height to calculate proper scrollHeight
       textArea.style.height = 'auto';
-      // Set new height based on content
       textArea.style.height = `${textArea.scrollHeight}px`;
     }
   }
 
-  function handleInput(e: Event) {
+  function handleInput(e: Event): void {
     const target = e.target as HTMLTextAreaElement;
     chatStore.setPrompt(target.value);
     adjustTextareaHeight();
   }
 
-  function handleKeydown(event: KeyboardEvent) {
+  function handleKeydown(event: KeyboardEvent): void {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       handleSubmit();
     }
   }
 
-  function scrollToBottom() {
+  function scrollToBottom(): void {
     if (responseArea) {
       responseArea.scrollTop = responseArea.scrollHeight;
     }
   }
 
-  function getModelConfig() {
+  $: if ($chatStore.currentExchange?.isStreaming) {
+    scrollToBottom();
+  }
+
+  function getModelConfig(): void {
     vscode.postMessage({
       command: 'getConfig'
     });
@@ -78,7 +78,6 @@
       } else {
         chatStore.addResponse(text);
       }
-      setTimeout(scrollToBottom, 0);
     } else if (command === 'modelConfig') {
       console.log('Model configuration:', config);
       // Handle config data
@@ -88,17 +87,40 @@
 
 <div class="container">
   <div class="exchange-area" bind:this={responseArea}>
+    {#if $chatStore.messages.length >= 2}
+      {#each $chatStore.messages.slice(0, -2) as message, i}
+        {@const nextMessage = $chatStore.messages[i + 1]}
+        {#if i % 2 === 0 && nextMessage}
+          <div class="exchange past-exchange">
+            <div class="prompt-message">
+              {message.content}
+            </div>
+            <div class="response">
+              {nextMessage.content}
+            </div>
+          </div>
+        {/if}
+      {/each}
+    {/if}
+
     {#if $chatStore.currentExchange}
-      <div class="exchange">
+      <div class="exchange current-exchange">
         <div class="prompt-message">
           {$chatStore.currentExchange.prompt}
         </div>
         <div class="response" role="region" aria-label="AI Response">
-          {$chatStore.currentExchange.response || 'Loading...'}
+          {#if $chatStore.currentExchange.isStreaming}
+            <div class="streaming">
+              {$chatStore.currentExchange.response || 'Thinking...'}
+              {#if $chatStore.currentExchange.response}
+                <span class="cursor">▋</span>
+              {/if}
+            </div>
+          {:else}
+            {$chatStore.currentExchange.response}
+          {/if}
         </div>
       </div>
-    {:else if $chatStore.waitingForResponse}
-      Loading...
     {/if}
   </div>
 
@@ -112,17 +134,14 @@
         aria-multiline="true"
         class="user-input-textarea"
         rows="1"
+        disabled={$chatStore.waitingForResponse}
       ></textarea>
     </div>
 
-    <div class="user-input-tool-bar">
-      <button
-        on:click={handleSubmit}
-        on:keydown={handleKeydown}
-        class="user-input-button"
-      >
-        Submit
-      </button>
-    </div>
+    <InputToolBar
+      handleSubmit={handleSubmit}
+      handleKeydown={handleKeydown}
+      buttonText="Submit"
+    />
   </div>
 </div>

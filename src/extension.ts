@@ -1,10 +1,18 @@
 import * as vscode from 'vscode';
-import ollama from 'ollama';
+import { default as ollama } from 'ollama';
 import { getWebViewContent, processCommand } from './lib/index';
 
 const model: string = 'deepseek-coder-v2:16b';
 
 export function activate(context: vscode.ExtensionContext) {
+  // Ensure storage is initialized
+  if (!context.storageUri && !context.globalStorageUri) {
+    console.error('No storage available');
+    return;
+  }
+
+  console.log('Storage path:', context.storageUri?.fsPath || context.globalStorageUri.fsPath);
+
   const disposable = vscode.commands.registerCommand('llull.start', () => {
     const panel = vscode.window.createWebviewPanel(
       'llull',
@@ -17,8 +25,12 @@ export function activate(context: vscode.ExtensionContext) {
 
     panel.webview.onDidReceiveMessage(async (message: { command: string; prompt: string }) => {
       console.log('[llull] received message:', message);
-      processCommand(panel, message, ollama, model);
-      console.log('[llull] processed message');
+      try {
+        await processCommand(panel, message, ollama, model, context);
+        console.log('[llull] processed message');
+      } catch (error) {
+        console.error('[llull] error processing message:', error);
+      }
     });
   });
 
