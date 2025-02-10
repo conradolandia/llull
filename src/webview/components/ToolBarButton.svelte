@@ -1,7 +1,9 @@
 <script lang="ts">
-  export let handleSubmit: () => void;
-  export let handleKeydown: (event: KeyboardEvent) => void;
-  export let buttonText: string = 'Submit';
+  import type { ToolBarButtonProps } from '../svelte.d';
+
+  export let handleSubmit: ToolBarButtonProps['handleSubmit'];
+  export let handleKeydown: ToolBarButtonProps['handleKeydown'];
+  export let buttonText: ToolBarButtonProps['buttonText'];
 </script>
 
 <div class="user-input-tool-bar">

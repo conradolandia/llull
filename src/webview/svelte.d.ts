@@ -8,6 +8,12 @@ export declare interface VSCodeAPI {
   setState(state: any): void;
 }
 
+export interface ToolBarButtonProps {
+  handleSubmit: () => void;
+  handleKeydown: (event: KeyboardEvent) => void;
+  buttonText: string;
+}
+
 declare global {
   interface Window {
     acquireVsCodeApi(): {

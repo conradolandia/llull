@@ -1,16 +1,26 @@
 <script lang="ts">
-  import type { VSCodeAPI } from './svelte.d';
+  import type { VSCodeAPI, ToolBarButtonProps } from './svelte.d';
   import { chatStore } from './stores/chat';
   import { onMount } from 'svelte';
 
   import './styles/chat.css';
 
-  import InputToolBar from './components/InputToolBar.svelte';
+  import ToolBar from './components/ToolBar.svelte';
 
+  const vscode = (window as any).acquireVsCodeApi() as VSCodeAPI;
+
+  let buttons: ToolBarButtonProps[] = [
+    {
+      handleSubmit,
+      handleKeydown,
+      buttonText: 'Submit'
+    }
+  ];
+
+  let fixedWidth: boolean = false;
   let textArea: HTMLTextAreaElement;
   let responseArea: HTMLDivElement;
 
-  const vscode = (window as any).acquireVsCodeApi() as VSCodeAPI;
 
   function handleSubmit(): void {
     if ($chatStore.prompt) {
@@ -55,15 +65,16 @@
     }
   }
 
-  $: if ($chatStore.currentExchange?.isStreaming) {
-    scrollToBottom();
-  }
-
   function getModelConfig(): void {
     vscode.postMessage({
       command: 'getConfig'
     });
   }
+
+  $: if ($chatStore.currentExchange?.isStreaming) {
+    scrollToBottom();
+  }
+
 
   onMount(() => {
     textArea.focus();
@@ -85,7 +96,7 @@
   });
 </script>
 
-<div class="container">
+<div class="container" class:fixed-width={fixedWidth}>
   <div class="exchange-area" bind:this={responseArea}>
     {#if $chatStore.messages.length >= 2}
       {#each $chatStore.messages.slice(0, -2) as message, i}
@@ -138,10 +149,6 @@
       ></textarea>
     </div>
 
-    <InputToolBar
-      handleSubmit={handleSubmit}
-      handleKeydown={handleKeydown}
-      buttonText="Submit"
-    />
+    <ToolBar {buttons} />
   </div>
 </div>
