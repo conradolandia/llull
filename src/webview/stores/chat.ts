@@ -5,10 +5,12 @@ export interface ChatState {
   prompt: string;
   messages: Message[];
   waitingForResponse: boolean;
+  includeWorkspaceContext: boolean;
   currentExchange: {
     prompt: string;
     response: string;
     isStreaming: boolean;
+    context?: string;
   } | null;
 }
 
@@ -17,6 +19,7 @@ const createChatStore = () => {
     prompt: '',
     messages: [],
     waitingForResponse: false,
+    includeWorkspaceContext: false,
     currentExchange: null
   });
 
@@ -66,8 +69,11 @@ const createChatStore = () => {
       prompt: '',
       messages: [],
       waitingForResponse: false,
+      includeWorkspaceContext: false,
       currentExchange: null
-    })
+    }),
+    setIncludeWorkspaceContext: (include: boolean) =>
+      update(state => ({ ...state, includeWorkspaceContext: include })),
   };
 };
 
