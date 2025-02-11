@@ -12,6 +12,8 @@ export interface ToolBarButtonProps {
   handleSubmit: () => void;
   handleKeydown: (event: KeyboardEvent) => void;
   buttonText: string;
+  buttonType?: 'button' | 'link';
+  buttonIcon?: string;
 }
 
 declare global {

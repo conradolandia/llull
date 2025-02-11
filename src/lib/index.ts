@@ -5,14 +5,18 @@ import { VectorStore } from './services/vectorStore';
 
 const title = '[Llull] asistente de programación';
 
+export interface CommandMessage {
+  command: string;
+  text?: string;
+  messages?: Message[];
+  context?: string;
+  model?: string;
+  includeWorkspaceContext?: boolean;
+}
+
 export const processCommand = async (
   panel: vscode.WebviewPanel,
-  message: {
-    command: string;
-    text?: string;
-    messages?: Message[];
-    context?: string[];
-  },
+  message: CommandMessage,
   provider: any,
   model: string,
   context: vscode.ExtensionContext
@@ -27,7 +31,7 @@ export const processCommand = async (
     if (!provider.chat || !message.text || !messages || !Array.isArray(messages)) return;
 
     try {
-      const relevantContext = await vectorStore.getRelevantContext(message.text);
+      const relevantContext = message.context || await vectorStore.getRelevantContext(message.text);
       const systemPrompt = relevantContext
         ? `Previous relevant context: ${relevantContext}\nBe concise and focus on the current question.`
         : 'Be concise and direct in your responses.';
@@ -134,12 +138,29 @@ export const processCommand = async (
       config
     });
     return;
+  } else if (message.command === 'getModelList') {
+    try {
+      console.log('Getting model list...');
+      const models = await getModelList(provider);
+      console.log('Sending models to webview:', models);
+      panel.webview.postMessage({
+        command: 'modelList',
+        models
+      });
+    } catch (error) {
+      console.error('Error getting model list:', error);
+      panel.webview.postMessage({
+        command: 'modelList',
+        models: []
+      });
+    }
+    return;
   }
 };
 
 export const getWebViewContent = (webview: vscode.Webview, extensionUri: vscode.Uri): string => {
   const scriptUri = webview.asWebviewUri(Uri.joinPath(extensionUri, 'out', 'webview', 'main.js'));
-  const toolkitUri = webview.asWebviewUri(Uri.joinPath(extensionUri, 'node_modules', '@vscode/webview-ui-toolkit', 'dist', 'toolkit.js'));
+  const codiconsUri = webview.asWebviewUri(Uri.joinPath(extensionUri, 'node_modules', '@vscode/codicons', 'dist', 'codicon.css'));
 
   return /* html */ `
     <!DOCTYPE html>
@@ -147,8 +168,9 @@ export const getWebViewContent = (webview: vscode.Webview, extensionUri: vscode.
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src ${webview.cspSource}; style-src ${webview.cspSource} 'unsafe-inline';">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src ${webview.cspSource}; script-src ${webview.cspSource}; style-src ${webview.cspSource} 'unsafe-inline';">
         <title>${title}</title>
+        <link href="${codiconsUri}" rel="stylesheet" />
         <style>
           html, body {
             height: 100%;
@@ -178,5 +200,39 @@ export const getModelConfig = async (
   } catch (error) {
     console.error('Error getting model config:', error);
     return null;
+  }
+};
+
+export const getModelList = async (provider: any) => {
+  try {
+    console.log('Provider methods:', Object.keys(provider));
+    console.log('Testing provider.list exists:', typeof provider.list === 'function');
+
+    const response = await provider.list();
+    console.log('Raw Ollama response:', response);
+
+    // Test the response structure
+    console.log('Response type:', typeof response);
+    console.log('Response has models:', response?.models);
+
+    if (response && Array.isArray(response.models)) {
+      return response.models;
+    }
+    // If response structure is different, try to handle it
+    if (response && typeof response === 'object') {
+      const models = Array.isArray(response) ? response : [response];
+      console.log('Returning processed models:', models);
+      return models;
+    }
+    console.warn('Unexpected model list format:', response);
+    return [];
+  } catch (error: any) {
+    console.error('Error getting model list:', error);
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
+    return [];
   }
 };
